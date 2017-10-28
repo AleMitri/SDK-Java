@@ -1,5 +1,6 @@
 package main;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,13 +9,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+//import org.json.JSONArray;
+//import org.json.JSONException;
+//import org.json.JSONObject;
 
 import ar.com.todopago.api.ElementNames;
 import ar.com.todopago.api.TodoPagoConector;
 import ar.com.todopago.api.exceptions.ConnectionException;
 import ar.com.todopago.api.exceptions.EmptyFieldException;
 import ar.com.todopago.api.exceptions.ResponseException;
+//import ar.com.todopago.api.model.GBRDTParameters;
 import ar.com.todopago.api.model.User;
+//import ar.com.todopago.api.rest.GoogleRest;
+//import ar.com.todopago.api.rest.GoogleRestTodoPago;
+//import mocks.GetByRangeDateTimeMockParameters;
+
 
 /**
  * @author juan.peregrina
@@ -27,14 +36,13 @@ public class Test {
 	public static int vertical = RETAIL;// Configurar vertical a usar
 	private final static Logger logger = Logger.getLogger(Test.class.getName());
 
-	public static final String APIKEY = "TODOPAGO 0b27699db496431a8391096be5ffc";
-	public static final String MERCHANT = "157";
-	public static final String SECURITY = "0b27699db496431a8391096be5ffc";
-	
+	public static final String APIKEY = "TODOPAGO 45025C1E041EF13706C3992340A4393D";
+	public static final String MERCHANT = "89118";
+	public static final String SECURITY = "45025C1E041EF13706C3992340A4393D";
 
-	public static void main(String[] args) throws MalformedURLException {
+	public static void main(String[] args) throws MalformedURLException, UnsupportedEncodingException {
 
-		boolean overrideSSL = true;
+		//boolean overrideSSL = true;
 
 		// Production
 		// TodoPagoConector tpc = new
@@ -55,8 +63,8 @@ public class Test {
 		Map<String, Object> b = tpc.getAuthorizeAnswer(getAAParameters());
 		printMap(b, "");
 
-//		Map<String, Object> e = tpc.getStatus(getSParameters());
-//		printMap(e, "");
+		Map<String, Object> e = tpc.getStatus(getSParameters());
+		printMap(e, "");
 
 		Map<String, Object> f = tpc.getAllPaymentMethods(getPMParameters());
 		System.out.println(f);
@@ -74,9 +82,10 @@ public class Test {
 		System.out.println(i);
 		printMap(i, "");
 
-		 Map<String, Object> j = tpc.getByRangeDateTime(getBRYParameters());
-		 System.out.println(j);
-		 printMap(j, "");
+		Map<String, Object> j = tpc.getByRangeDateTime(getBRYParameters());
+		//Map<String, Object> j = tpc.getByRangeDateTime(new GBRDTParameters(Test.MERCHANT,"1",GetByRangeDateTimeMockParameters.STARTDATEWITHHOUR,GetByRangeDateTimeMockParameters.ENDDATEWITHHOUR));
+		System.out.println(j);
+		printMap(j, "");
 
 	}
 
@@ -115,6 +124,8 @@ public class Test {
 		parameters.put(ElementNames.MAXINSTALLMENTS, "12");
 		parameters.put(ElementNames.MININSTALLMENTS, "1");
 		parameters.put(ElementNames.TIMEOUT, "1800000");
+		parameters.put(ElementNames.DISTRIBUTEDMERCHANT, "3#20");
+		parameters.put(ElementNames.DISTRIBUTEDAMOUNT, "10.00#15.00");
 
 		// Datos Opcionales:
 		// parameters.put("AVAILABLEPAYMENTMETHODSIDS", "1#194#43#45");
@@ -129,7 +140,7 @@ public class Test {
 	private static Map<String, String> getFraudControlParameters() {
 		// Example
 		Map<String, String> parameters = new HashMap<String, String>();
-		parameters.put("CSBTCITY", "Villa General Belgrano"); // MANDATORIO.
+		parameters.put("CSBTCITY", "villa general belgrano"); // MANDATORIO.
 		parameters.put("CSBTCOUNTRY", "AR");// MANDATORIO. C�digo ISO.
 		parameters.put("CSBTEMAIL", "some@someurl.com"); // MANDATORIO.
 		parameters.put("CSBTFIRSTNAME", "juan");// MANDATORIO.
@@ -162,7 +173,7 @@ public class Test {
 	}
 
 	private static void setRetail(Map<String, String> parameters) {
-		parameters.put("CSSTCITY", "Villa General Belgrano"); // MANDATORIO.
+		parameters.put("CSSTCITY", "villa general belgrano"); // MANDATORIO.
 		parameters.put("CSSTCOUNTRY", "AR");// MANDATORIO. C�digo ISO.
 		parameters.put("CSSTEMAIL", "some@someurl.com"); // MANDATORIO.
 		parameters.put("CSSTFIRSTNAME", "Juan");// MANDATORIO.
@@ -231,8 +242,8 @@ public class Test {
 	private static Map<String, String> getBRYParameters() {
 		Map<String, String> parameters = new HashMap<String, String>();
 		parameters.put(ElementNames.Merchant, MERCHANT);
-		parameters.put(ElementNames.STARTDATE, "2016-01-01");
-		parameters.put(ElementNames.ENDDATE, "2017-03-03");
+		parameters.put(ElementNames.STARTDATE, "2017-01-01");
+		parameters.put(ElementNames.ENDDATE, "2017-01-13");
 		parameters.put(ElementNames.PAGENUMBER, "1");
 		return parameters;
 	}

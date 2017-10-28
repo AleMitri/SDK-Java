@@ -22,6 +22,9 @@ public class SARMockParameters {
 		parameters.put(ElementNames.EMAILCLIENTE, "some@someurl.com");
 		parameters.put(ElementNames.MAXINSTALLMENTS, "12");
 		parameters.put(ElementNames.MININSTALLMENTS, "1");
+		parameters.put(ElementNames.TIMEOUT, "1800000");
+		parameters.put(ElementNames.DISTRIBUTEDMERCHANT, "3#20");
+		parameters.put(ElementNames.DISTRIBUTEDAMOUNT, "10.00#15.00");
 
 		return parameters;
 	}

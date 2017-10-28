@@ -4,20 +4,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FraudControlMockParameters {
-
 	// Parametros para el control de fraude
-	public static Map<String, String> getFraudControlParameters() {
-		// Example
+	public static Map<String, String> getFraudControlParameters(String csbtcity,String csbtcountry,String csbtstate,String csbtstreet1,String csbtpostalcode,String csstcity,String csstcountry,String csststate,String csststreet1,String csstpostalcode){
 		Map<String, String> parameters = new HashMap<String, String>();
-		parameters.put("CSBTCITY", "Villa General Belgrano"); // MANDATORIO.
-		parameters.put("CSBTCOUNTRY", "AR");// MANDATORIO. C�digo ISO.
+		parameters.put("CSBTCITY",csbtcity); // MANDATORIO.
+		parameters.put("CSBTCOUNTRY",csbtcountry);// MANDATORIO. C�digo ISO.
 		parameters.put("CSBTEMAIL", "some@someurl.com"); // MANDATORIO.
 		parameters.put("CSBTFIRSTNAME", "juan");// MANDATORIO.
 		parameters.put("CSBTLASTNAME", "Perez");// MANDATORIO.
 		parameters.put("CSBTPHONENUMBER", "541160913988");// MANDATORIO.
-		parameters.put("CSBTPOSTALCODE", "1010");// MANDATORIO.
-		parameters.put("CSBTSTATE", "B");// MANDATORIO
-		parameters.put("CSBTSTREET1", "Some Street 2153");// MANDATORIO.
+		parameters.put("CSBTPOSTALCODE",csbtpostalcode);// MANDATORIO.
+		parameters.put("CSBTSTATE",csbtstate);// MANDATORIO
+		parameters.put("CSBTSTREET1", csbtstreet1);// MANDATORIO.
 		parameters.put("CSBTSTREET2", "Test");// NO MANDATORIO
 
 		parameters.put("CSBTCUSTOMERID", "453458"); // MANDATORIO.
@@ -34,23 +32,23 @@ public class FraudControlMockParameters {
 
 		switch (TodoPagoParametersMock.vertical) {
 		case TodoPagoParametersMock.RETAIL:
-			setRetail(parameters);
+			setRetail(parameters,csstcity,csstcountry,csststate,csststreet1,csstpostalcode);
 			break;
 		}
 
 		return parameters;
 	}
 	
-	public static void setRetail(Map<String, String> parameters) {
-		parameters.put("CSSTCITY", "Villa General Belgrano"); // MANDATORIO.
-		parameters.put("CSSTCOUNTRY", "AR");// MANDATORIO. C�digo ISO.
+	public static void setRetail(Map<String, String> parameters,String csstcity,String csstcountry,String csststate,String csststreet1,String csstpostalcode) {
+		parameters.put("CSSTCITY",csstcity); // MANDATORIO.
+		parameters.put("CSSTCOUNTRY", csstcountry);// MANDATORIO. C�digo ISO.
 		parameters.put("CSSTEMAIL", "some@someurl.com"); // MANDATORIO.
 		parameters.put("CSSTFIRSTNAME", "Juan");// MANDATORIO.
 		parameters.put("CSSTLASTNAME", "Perez");// MANDATORIO.
 		parameters.put("CSSTPHONENUMBER", "541160913988");// MANDATORIO.
-		parameters.put("CSSTPOSTALCODE", " 1010");// MANDATORIO.
-		parameters.put("CSSTSTATE", "B");// MANDATORIO
-		parameters.put("CSSTSTREET1", "Some Street 2153");// MANDATORIO.
+		parameters.put("CSSTPOSTALCODE",csstpostalcode);// MANDATORIO.
+		parameters.put("CSSTSTATE",csststate);// MANDATORIO
+		parameters.put("CSSTSTREET1",csststreet1);// MANDATORIO.
 		parameters.put("CSSTSTREET2", "Test");// NO MANDATORIO.
 
 		parameters.put("CSITPRODUCTCODE", "electronic_good");// CONDICIONAL
@@ -65,6 +63,6 @@ public class FraudControlMockParameters {
 		parameters.put("CSMDD13", "");// NO MANDATORIO.
 		parameters.put("CSMDD14", "");// NO MANDATORIO.
 		parameters.put("CSMDD15", "");// NO MANDATORIO.
-		parameters.put("CSMDD16", "");// NO MANDATORIO.
+		parameters.put("CSMDD16", "");// NO MANDATORIO.	
 	}
 }

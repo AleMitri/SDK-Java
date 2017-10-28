@@ -54,7 +54,11 @@ public class OperationsParser {
 				} else if (nList.item(i).getNodeName().equals("Operations")) {
 					ret.put(nList.item(i).getNodeName() + i, parseNodeListToMap(nList.item(i).getChildNodes()));
 				} else {
-					ret.put(nList.item(i).getNodeName(), parseNodeListToMap(nList.item(i).getChildNodes()));
+					if (nList.item(i).getNodeName().equals("Operations")) {
+						ret.put(nList.item(i).getNodeName() + " - " + (i + 1), parseNodeListToMap(nList.item(i).getChildNodes()));
+					} else {
+						ret.put(nList.item(i).getNodeName(), parseNodeListToMap(nList.item(i).getChildNodes()));
+					}
 				}
 			} else {
 				// add value to this map
@@ -76,6 +80,35 @@ public class OperationsParser {
 		outMap = generateMap(jsonObject, outMap, null);
 		return outMap;
 	}
+	
+	public static Map<String, Object> parseInputStreamJsonGoogleToMap(InputStream inputStream)
+			throws JSONException, IOException {
+		Map<String, Object> outMap = new HashMap<String, Object>();
+		BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+		String output = br.readLine();
+		StringBuilder sb=new StringBuilder();
+		
+		
+		while(output!=null){
+			sb.append(output);
+			output=br.readLine();
+		}
+		
+		outMap=jsonStringToMap(sb.toString());
+	
+		return outMap;
+	}
+	
+	public static Map<String, Object> jsonStringToMap(String jsonString) throws JSONException {
+
+        JSONObject jsonObject=new JSONObject(jsonString);
+        
+        Map<String,Object> map=new HashMap<String, Object>();
+        
+        map.put("results",jsonObject);
+        
+        return map; 
+    }
 
 	private static Map<String, Object> generateMap(JSONObject jsonObject, Map<String, Object> outMap, String key)
 			throws JSONException {

@@ -22,11 +22,10 @@ import ar.com.todopago.api.exceptions.EmptyFieldException;
 import ar.com.todopago.api.exceptions.EmptyFieldPassException;
 import ar.com.todopago.api.exceptions.EmptyFieldUserException;
 import ar.com.todopago.api.exceptions.ResponseException;
+import ar.com.todopago.api.model.GBRDTParameters;
 import ar.com.todopago.api.model.User;
 import ar.com.todopago.api.rest.BSARest;
-import ar.com.todopago.api.rest.RestConnector;
 import ar.com.todopago.api.rest.TodoPagoRest;
-import ar.com.todopago.utils.FraudControlValidate;
 import ar.com.todopago.utils.TodoPagoConectorAuthorize;
 import ar.com.todopago.utils.TodoPagoConectorEchoService;
 
@@ -53,7 +52,9 @@ public class TodoPagoConector {
 	public final static int productionEndpoint = 1;
 		
 	private String t;
+
 	private String ep;
+	
 	private TodoPagoConectorAuthorize authorize;
 	private TodoPagoConectorEchoService echoServiceDSS;
 	private TodoPagoConectorEchoService echoServiceESB;
@@ -124,14 +125,18 @@ public class TodoPagoConector {
 	public Map<String, Object> sendAuthorizeRequest(Map<String, String> parameters, Map<String, String> fraudControl) {
 		
 		Map<String, Object> result = new HashMap<String, Object>();
+
+		Map<String, String> formattedParams=fraudControl;
+		
 //		FraudControlValidate cf = new FraudControlValidate();
 //		fraudControl = cf.validate(fraudControl);
 		
 //		if(fraudControl.containsKey(ElementNames.ERROR)){			
 //			result = setMapValidate(fraudControl);			
 //		}else{
-			result = authorize.getpaymentValues(parameters, fraudControl);			
+			result = authorize.getpaymentValues(parameters,formattedParams);
 //		}
+			
 		return result;
 	}
 
@@ -175,6 +180,12 @@ public class TodoPagoConector {
 	}
 	
 	public Map<String, Object> getByRangeDateTime(Map<String, String> parameters) {
+		Map<String, Object> result = new HashMap<String, Object>();
+		result = todoPagoRest.getByRangeDateTime(parameters);
+		return result;
+	}
+	
+	public Map<String, Object> getByRangeDateTime(GBRDTParameters parameters) {
 		Map<String, Object> result = new HashMap<String, Object>();
 		result = todoPagoRest.getByRangeDateTime(parameters);
 		return result;
@@ -302,6 +313,5 @@ public class TodoPagoConector {
 		mapValidate.put("Error", map );		
 		return mapValidate;
 	}
-	
 	
 }

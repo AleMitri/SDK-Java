@@ -32,6 +32,8 @@ public final class ElementNames {
 	public static final String STARTDATE = "STARTDATE";
 	public static final String ENDDATE = "ENDDATE";
 	public static final String PAGENUMBER = "PAGENUMBER";
+	public static final String DISTRIBUTEDMERCHANT = "DISTRIBUTEDMERCHANT";
+	public static final String DISTRIBUTEDAMOUNT = "DISTRIBUTEDAMOUNT";
 
 	// PaymentMethods
 	public static final String Id = "Id";

@@ -2,6 +2,8 @@ package ar.com.todopago.api.rest;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +14,7 @@ import org.json.JSONObject;
 import ar.com.todopago.api.ElementNames;
 import ar.com.todopago.api.exceptions.ConnectionException;
 import ar.com.todopago.api.exceptions.ResponseException;
+import ar.com.todopago.api.model.GBRDTParameters;
 import ar.com.todopago.api.model.User;
 
 public class TodoPagoRest extends RestConnector{
@@ -95,17 +98,20 @@ public class TodoPagoRest extends RestConnector{
 		// Tets Amazon
 		// url =
 		// "http://localhost:8280/t/1.1/api/Operations/GetByRangeDateTime/MERCHANT/1/STARTDATE/2016-03-16/ENDDATE/2016-03-17/PAGENUMBER/1";
+		endpoint = endpoint.replace("t/1.1/", "t/1.2/");
 
 		StringBuilder sb = new StringBuilder(endpoint + OPERATIONS_GET_BY_RANGE_DATE_TIME);
 		sb.append(ElementNames.Merchant.toUpperCase() + "/" + params.get(ElementNames.Merchant) + "/");
-		sb.append(ElementNames.STARTDATE.toUpperCase() + "/" + params.get(ElementNames.STARTDATE) + "/");
-		sb.append(ElementNames.ENDDATE.toUpperCase() + "/" + params.get(ElementNames.ENDDATE) + "/");
+		sb.append(ElementNames.STARTDATE.toUpperCase() + "/" + URLEncoder.encode(params.get(ElementNames.STARTDATE)) + "/");
+		sb.append(ElementNames.ENDDATE.toUpperCase() + "/" + URLEncoder.encode(params.get(ElementNames.ENDDATE)) + "/");
 		sb.append(ElementNames.PAGENUMBER.toUpperCase() + "/" + params.get(ElementNames.PAGENUMBER));
 		logger.log(Level.INFO, "URLCreation GetByRangeDateTime " + sb.toString());
 
+		Map<String,String> headers = new HashMap<String,String>();
+		headers.put("Accept","application/xml");
 		Map<String, Object> result = new HashMap<String, Object>();
 		try {
-			result = OperationsParser.inputStreamToMap(sendGet(sb.toString(),true));
+			result = OperationsParser.inputStreamToMap(sendGet(sb.toString(),true,headers));
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Error on get", e.getMessage() + " - " + e.getLocalizedMessage());
 			result.put("Error", e.getMessage());
@@ -114,6 +120,35 @@ public class TodoPagoRest extends RestConnector{
 
 		return result;
 
+	}
+	
+	public Map<String, Object> getByRangeDateTime(GBRDTParameters parameters) {		
+		Map<String, Object> result = new HashMap<String, Object>();
+		
+		try {
+			endpoint = endpoint.replace("t/1.1/", "t/1.2/");
+
+			StringBuilder sb = new StringBuilder(endpoint + OPERATIONS_GET_BY_RANGE_DATE_TIME);
+			sb.append(ElementNames.Merchant.toUpperCase() + "/" + parameters.getMerchant() + "/");
+			sb.append(ElementNames.STARTDATE.toUpperCase() + "/" + URLEncoder.encode(parameters.getStartDate(), "UTF-8") + "/");
+			sb.append(ElementNames.ENDDATE.toUpperCase() + "/" + URLEncoder.encode(parameters.getEndDate(), "UTF-8") + "/");
+			sb.append(ElementNames.PAGENUMBER.toUpperCase() + "/" + parameters.getPageNumber());
+			logger.log(Level.INFO, "URLCreation GetByRangeDateTime " + sb.toString());
+			
+			result = OperationsParser.inputStreamToMap(sendGet(sb.toString(),true));
+		} 
+		catch (UnsupportedEncodingException e) {
+			logger.log(Level.SEVERE, "Unsoported Encoding", e.getMessage() + " - " + e.getLocalizedMessage());
+			result.put("Error", e.getMessage());
+			result.put("StackTrace", e.getStackTrace());
+		}
+		catch (Exception e) {
+			logger.log(Level.SEVERE, "Error on get", e.getMessage() + " - " + e.getLocalizedMessage());
+			result.put("Error", e.getMessage());
+			result.put("StackTrace", e.getStackTrace());
+		}
+
+		return result;
 	}
 
 	public Map<String, Object> getPromotions(Map<String, String> params) {
@@ -205,12 +240,12 @@ public class TodoPagoRest extends RestConnector{
 	public User getCredentials(User user) throws ResponseException, ConnectionException {
 
 		String url = endpoint + CREDENTIALS;
-		url = url.replace("t/1.1/", "");	
+		url = url.replace("t/1.1/", "");
+		url = url.replace("t/1.2/", "");
 		logger.log(Level.INFO, "URLCreation getCredentials " + url);
 		User userResponse = new User();
 
 		try {
-			
 			JSONObject data = new JSONObject();
 			data.put(ElementNames.USUARIO, user.getUser());
 			data.put(ElementNames.CLAVE, user.getPassword());
@@ -228,7 +263,4 @@ public class TodoPagoRest extends RestConnector{
 		
 		return userResponse;
 	}
-
-
-
 }

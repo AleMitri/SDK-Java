@@ -13,6 +13,11 @@ Todo Pago - módulo SDK-JAVA para conexión con gateway de pago
     + [Modo test](#test)
  + [Datos adicionales para prevención de fraude](#datosadicionales) 
     + [Datos de referencia](#datosreferencia) 
+ + [Opciones adicionales](#opcionesadicionales)
+    + [Rango de cuotas](#coutas)
+    + [Split de pago](#split)
+    + [Filtrado de Medios de pago](#filtromp)
+    + [Tiempo de vida de la transacción](#timeout)
  + [Características](#caracteristicas)
     + [Status de la operación](#status)
     + [Consulta de operaciones por rango de tiempo](#statusdate)
@@ -95,7 +100,7 @@ Si se cuenta con los http header suministrados por Todo Pago
 
 - Crear un Map con dichos http header
 ```java
-Map<String, List<String>> auth = new HashMap<>(String, List<String>);
+Map<String, List<String>> auth = new HashMap<String, List<String>>();
 auth.put(ElementNames.Authorization, Collections.singletonList("PRISMA f3d8b72c94ab4a06be2ef7c95490f7d3"));
 ```
 
@@ -131,12 +136,83 @@ Una vez adheridos se creará automáticamente una cuenta virtual, en la cual se 
 <br/>
 <a name="solicitudautorizacion"></a>
 #### Solicitud de autorización	
-En este caso hay que llamar a sendAuthorizeRequest(). 		
+En este caso hay que llamar a sendAuthorizeRequest().
+
+ 		
 ```java		
 Map<String, Object> a = tpc.sendAuthorizeRequest(parameters, getFraudControlParameters());		
 ```	
+
 <ins><strong>Datos propios del comercio</strong></ins>		
-El primer atributo parameters, debe ser un Map<String, String> con la siguiente estructura:		
+El primer atributo parameters, debe ser un Map<String, String> con la siguiente estructura:	
+	
+<table>
+  <tr>
+    <th>Campo</th>
+    <th>Requerido</th>
+    <th>Descripción</th>
+    <th>Tipo de Dato</th>
+    <th>Valores posibles / Ejemplo</th>
+  </tr>
+  <tr>
+    <td><b>Security</b></td>
+    <td>Sí</td>
+    <td>API Keys sin PRISMA o TODOPAGO y sin espacio.</td>
+    <td>Alfanumérico hasta 32 caracteres</td>
+    <td>912EC803B2CE49E4A541068D495AB570</td>
+  </tr>
+  <tr>
+    <td><b>Merchant</b></td>
+    <td>Sí</td>
+    <td>Nro. de Comercio (Merchant ID) provisto por TodoPago</td>
+    <td>Numérico</td>
+    <td>12345678</td>
+  </tr>
+  <tr>
+    <td><b>URL_OK</b></td>
+    <td>No</td>
+    <td>URL a la que el comprador será dirigido cuando la compra resulte exitosa</td>
+    <td>Alfanumérico hasta 256 caracteres</td>
+    <td>http://susitio.com/payment/Ok</td>
+  </tr>
+  <tr>
+    <td><b>URL_Error</b></td>
+    <td>No</td>
+    <td>URL a la que el comprador será dirigido cuando la compra no resulte exitosa</td>
+    <td>Alfanumérico hasta 256 caracteres</td>
+    <td>http://susitio.com/payment/Error</td>
+  </tr>
+  <tr>
+    <td><b>OPERATIONID</b></td>
+    <td>Sí</td>
+    <td>Identificación de la transacción para el Comercio. Debe ser distinto para cada operación.</td>
+    <td>Alfanumérico de 1 a 40 caracteres</td>
+    <td>10000012</td>
+  </tr>
+  <tr>
+    <td><b>CURRENCYCODE</b></td>
+    <td>Sí</td>
+    <td>Tipo de moneda de la operación. Sólo válido pesos argentinos (32)</td>
+    <td>Numérico de dos posiciones</td>
+    <td>32</td>
+  </tr>
+  <tr>
+    <td><b>AMOUNT</b></td>
+    <td>Sí</td>
+    <td>Importe en Pesos de la transacción.</td>
+    <td>Numérico con 9 dígitos con hasta 2 decimales 999999[.CC]
+Usando el punto como separador de decimales. No se permiten comas, ni como separador de miles ni como separador de decimales.</td>
+    <td>$125,38 -> 125.38</td>
+  </tr>
+  <tr>
+    <td><b>EMAILCLIENTE</b></td>
+    <td>Si</td>
+    <td>El comercio deberá enviar a TodoPago el email del cliente. Esta dirección se utilizará para enviar el mail de confirmación de la compra al cliente</td>
+    <td>Alfanumérico de hasta 80 caracteres.</td>
+    <td>cliente@mail.com</td>
+  </tr>
+</table>
+
 		
 ```java
 Map<String, String> parameters = new HashMap<String, String>();
@@ -152,10 +228,22 @@ Map<String, String> parameters = new HashMap<String, String>();
 	parameters.put(ElementNames.EMAILCLIENTE, "some@someurl.com");
 ```	
 
-<ins><strong>Datos prevención de fraude</strong></ins>	
-El segundo atributo getFraudControlParameters().  Ver [Datos adicionales para prevención de fraude](#datosadicionales)  
+<ins><strong>Datos prevención de fraude: </strong></ins>El segundo atributo getFraudControlParameter().
 
-<p><strong>Códigos de rechazo</strong></p>
+Ver [Datos adicionales para prevención de fraude](#datosadicionales)  
+
+**Respuesta**
+
+<table><tr>
+<td>Campo</td><td>Requerido</td><td>Descripción</td><td>Tipo de Dato</td><td>Valores posibles / Ejemplo</td></tr>
+<tr><td>**StatusCode**</td><td>Sí</td><td>Código de estado o valor de retorno del Servicio</td><td>Numérico de 5 posiciones</td><td> <ul><li>-1 -> OK</li><li>otro ->Error</li></ul></td></tr>
+<tr><td>**StatusMessage**</td><td>Sí</td><td>Descripción del códgo de retorno o estado del servicio</td><td>Alfanumérico hasta 256</td><td>Ejemplo: Solicitud de Autorización Registrada</td></tr>
+<tr><td>**URL_Request**</td><td>Sí</td><td>Url del formulario de pago</td><td>URL</td><td>https://forms.todopago.com.ar/formulario/commands?command=formulario&m=t7d3938c9-f7b1-4ee9-e76b-9cc84f73fe81</td></tr>
+<tr><td>**RequestKey**</td><td>No</td><td>Identificador Privado del Requerimiento obtenido en la respuesta de la operación SendAuthorizeRequest. Nunca debe ser expuesto hacia el Web Browser. Solo será utilizado entre el ecommerce y TodoPago</td><td>Alfanumérico hasta 48 caracteres</td><td>8496472a-8c87-e35b-dcf2-94d5e31eb12f</td></tr>
+<tr><td>**PublicRequestKey**</td><td>No</td><td>Identificador Público del Requerimiento obenido en la respuesta de la operación SendAuthorizeRequest</td><td>Alfanumérico de hasta 48 caracteres</td><td>t7d3938c9-f7b1-4ee9-e76b-9cc84f73fe81</td></tr>
+</table>
+
+
 ```java	
 Map<String, Object> 	
 	{ StatusCode = -1,
@@ -178,6 +266,46 @@ Map<String, Object>
 #### Confirmación de transacción.
 En este caso hay que llamar a **getAuthorizeAnswer()**, enviando como parámetro un Map<String, String> como se describe a continuación.
 
+<table>
+  <tr>
+    <th>Campo</th>
+    <th>Requerido</th>
+    <th>Descripción</th>
+    <th>Tipo de Dato</th>
+    <th>Valores posibles / Ejemplo</th>
+  </tr>
+  <tr>
+    <td><b>Security</b></td>
+    <td>No</td>
+    <td>Token  de Seguridad Generado en el Portal de TodoPago</td>
+    <td>Alfanumérico hasta 32 caracteres</td>
+    <td>1234567890ABCDEF1234567890ABCDEF</td>
+  </tr>
+  <tr>
+    <td><b>Merchant</b></td>
+    <td>Si</td>
+    <td>Nro. de Comercio (Merchant ID) provisto por TodoPago</td>
+    <td>Alfanumérico de  8 caracteres</td>
+    <td>12345678</td>
+  </tr>
+  <tr>
+    <td><b>RequestKey</b></td>
+    <td>Si</td>
+    <td>Identificador Privado del Requerimiento obtenido en la respuesta de la operación SendAuthorizeRequest . Nunca debe ser expuesto hacia el Web Browser. Solo será utilizado entre el ecommerce y TodoPago</td>
+    <td>Alfanumérico hasta 48 caracteres</td>
+    <td>8496472a-8c87-e35b-dcf2-94d5e31eb12f</td>
+  </tr>
+  <tr>
+    <td><b>AnswerKey</b></td>
+    <td>Sí</td>
+    <td>Identificador Público de la Respuesta. Recibido según el formulario utilizado, en la url de redirección hacia el ecommerce, o como propiedad retornada en el callback del formulario híbrido.</td>
+    <td>Alfanumérico hasta 48 caracteres</td>
+    <td>8496472a-8c87-e35b-dcf2-94d5e31eb12f</td>
+  </tr>
+</table>
+
+
+
 ```java	
 Map<String, String> parameters = new HashMap<String, String>();		
 	parameters.put(ElementNames.Security, "1234567890ABCDEF1234567890ABCDEF"); // Token de seguridad, provisto por TODO PAGO. MANDATORIO.
@@ -194,6 +322,33 @@ El parámetro <strong>RequestKey</strong> es siempre distinto y debe ser persist
 
 <ins><strong>Importante</strong></ins> El campo **AnswerKey** se adiciona  en la redirección que se realiza a alguna de las direcciones ( URL ) epecificadas en el  servicio **SendAurhorizationRequest**, esto sucede cuando la transacción ya fue resuelta y es necesario regresar al site para finalizar la transacción de pago, también se adiciona el campo Order, el cual tendrá el contenido enviado en el campo **OPERATIONID**. Para nuestro ejemplo: <strong>http://susitio.com/paydtodopago/ok?Order=27398173292187&Answer=1111-2222-3333-4444-5555-6666-7777</strong>		
 
+<table>
+<tr><td>Campo</td><td>Requerido</td><td>Descripción</td><td>Tipo de Dato</td><td>Valores posibles / Ejemplo</td></tr>
+<tr><td>**StatusCode** </td><td>Si</td><td>Código de estado o valor de retorno del Servicio</td><td>Numèrico de 5 posiciones</td><td> <b>-1 -> OK<br> 0 a 99999 o vacío -> error</b></td></tr>
+<tr><td>**StatusMessage**</td><td>Si</td><td>Descripción del código de retorno o estado del servicio</td><td>Alfanumérico hasta 256</td><td>Ejemplo: "APROBADA"</td></tr>
+<tr><td>**AuthorizationKey**</td><td>No</td><td>Identificador Privado de la Respuesta</td><td>Alfanumérico hasta 256 caracteres</td><td>Ejemplo: "9c2f0109-e585-0776-d3d0-f934ed50ccd4"</td></tr>
+<tr><td>**EncodingMethod**</td><td>No</td><td>Especifica el tipo codificación que se usa para los datos de la transacciones de pagos</td><td>Alfanumérico hasta 16 caracteres</td><td>XML</td></tr>
+<tr><td>**Payload**</td><td>No</td><td>Documento codificado  en el  formato especificado en el campo EncodingMethod  el cual contiene los datos de la transacción ejecutada</td><td>Alfanumérico hasta 2048 caracteres</td><td>-</td></tr></table>
+.
+
+El campo o elemento Payload es utilizado para retornar los datos de la respuesta de la transacción. En la siguiente Tabla se muestran los valores enviados en el campo _Answer_ de dicho elemento. (El otro campo presente, de nombre _Request_ contiene información enviada en el requerimiento del _GetAuthorizeAnswer_)
+
+<table>
+<tr><td>Campo</td><td>Requerido</td><td>Descripción</td><td>Tipo de Dato</td><td>Valores posibles / Ejemplo</td></tr>
+<tr><td>**DATETIME**</td><td>Si</td><td>Fecha y Hora de la Transacción</td><td>Fecha y Hora. aaaammddTHHMMSSZ La hora se expresa en formato 24 hs.</td><td>Ejemplo: "2017-07-28T15:54:14Z"</td></tr>
+<tr><td>**RESULTCODE**</td><td>Si</td><td>Código de estado o valor de retorno del Servicio</td><td>Numérico de 5 posiciones</td><td> <b>-1 -> OK<br> 0 a 99999 o vacío -> error</b></td></tr>
+<tr><td>**RESULTMESSAGE**</td><td>Si</td><td>Descripción del código de retorno o estado del servicio</td><td>Alfanumérico hasta 256</td><td>Ejemplo: "APROBADA"</td></tr>
+<tr><td>**CURRENCYNAME**</td><td>No</td><td>Nombre de la Moneda</td><td>Alfanumérico</td><td>Ejemplo: "Peso Argentino"</td></tr>
+<tr><td>**PAYMENTMETHODNAME**</td><td>Sí </td><td>Medio de pago usado para la operación</td><td>Alfanumérico</td><td>Ejemplo: "VISA"</td></tr>
+<tr><td>**TICKETNUMBER** </td><td>No</td><td>Número de Ticket o Voucher</td><td>Numérico de Hasta 4 dígitos</td><td>Ejemplo: 7057</td></tr>
+<tr><td>**CARDNUMBERVISIBLE**</td><td>No</td><td>Número de Tarjeta, enmascarado según normativas nacionales, regionales o globales</td><td></td><td>Ejemplo: "450799XXXXXX0010"</td></tr>
+<tr><td>**AUTHORIZATIONCODE**</td><td>No</td><td>Código de Autorización</td><td>Alfanumérico de hasta 8 caracteres</td><td>Ejemplo: "014158"</td></tr>
+<tr><td>**INSTALLMENTPAYMENTS**</td><td>No</td><td>Cantidad de cuotas elegidas para la operación</td><td>Numérico</td><td> Ejemplo: 03</td></tr>
+<tr><td>**AMOUNTBUYER**</td><td>Si</td><td>Monto final (incluyendo Costo Financiero) pagado por el comprador</td><td>Decimal</td><td> Ejemplo: 129.68</td></tr>
+<tr><td>**CFT**</td><td>Si</td><td>CFT de la promoción aplicada.</td><td>Decimal</td><td> Ejemplo: 0.00</td></tr>
+<tr><td>**TEA**</td><td>Si</td><td>TEA de la promoción aplicada.</td><td>Decimal</td><td> Ejemplo: 22.00</td></tr>
+</table>
+
 ```java		
 Map<String, Object>		
 	{ StatusCode = -1, 		
@@ -208,7 +363,10 @@ Map<String, Object>
 							 TICKETNUMBER = 12,		
 							 CARDNUMBERVISIBLE = 450799******4905,		
 							 AUTHORIZATIONCODE = TEST38,
-							 INSTALLMENTPAYMENTS = 6 }, 
+							 INSTALLMENTPAYMENTS = 6,
+							 TEA = 22.00,
+							 CFT = 0.00
+							 }, 
 				{ Request = { MERCHANT = 12345678,
 						      OPERATIONID = ABCDEF-1234-12221-FDE1-00000012,
 							  AMOUNT = 1.00,
@@ -250,6 +408,7 @@ private static Map<String, List<String>> getAuthorization() {
 ```
 
 [<sub>Volver a inicio</sub>](#inicio)
+<br>
 
 <a name="datosadicionales"></a>		
 ## Datos adicionales para control de fraude		
@@ -308,6 +467,7 @@ private static Map<String, String> getFraudControlParameters() {
 	parameters.put("CSITUNITPRICE", "10.01");//Formato Idem CSITTOTALAMOUNT. CONDICIONAL.	
 }	
 ```
+
 
 <a name="datosreferencia"></a>    
 #### Datos de referencia   
@@ -381,7 +541,9 @@ private static Map<String, String> getFraudControlParameters() {
 <tr><td>CSMDD89</td><td>Requerido (para Billetera)</td><td>Integer (2)</td><td></td><td>Nivel de Riesgo asignado al Medio de Pago que Utiliza</td></tr>
 </table>
 
+
 [<sub>Volver a inicio</sub>](#inicio)
+<br>
 
 <a name="caracteristicas"></a>
 ## Características
@@ -392,6 +554,31 @@ private static Map<String, String> getFraudControlParameters() {
 <a name="status"></a>
 #### Status de la Operación
 La SDK cuenta con un método para consultar el status de la transacción desde la misma SDK. El método se utiliza de la siguiente manera:
+
+<table>
+  <tr>
+    <th>Campo</th>
+    <th>Requerido</th>
+    <th>Descripción</th>
+    <th>Tipo de Dato</th>
+    <th>Valores posibles / Ejemplo</th>
+  </tr>
+  <tr>
+    <td><b>MERCHANT</b></td>
+    <td>Sí</td>
+    <td>Código de comercio o cuenta provisto por TodoPago</td>
+    <td>Alfanumérico de 8 caracteres</td>
+    <td>12345678</td>
+  </tr>
+  <tr>
+    <td><b>OPERATIONID</b></td>
+    <td>Sí</td>
+    <td>Identificación de la transacción para el Comercio. Debe ser distinto para cada operación.</td>
+    <td>Alfanumérico de 1 a 40 caracteres.</td>
+    <td>141120084707</td>
+  </tr>
+</table>
+
 
 ```java
 
@@ -405,6 +592,137 @@ private static Map<String, String> getSParameters(){
 Map<String, Object> d = tpc.getStatus(getSParameters());// Merchant es el id site y OperationID es el id operación que se envió en el array a través del método sendAuthorizeRequest() 
 ```
 El siguiente método retornará el status actual de la transacción en Todopago.
+
+<table>
+  <tr>
+    <th>Campo</th>
+    <th>Requerido</th>
+    <th>Descripción</th>
+    <th>Tipo de Dato</th>
+    <th>Valores posibles / Ejemplo</th>
+  </tr>
+  <tr>
+  <td><b>RESULTCODE</b></td>
+  <td>Sí</td>
+  <td>Número identificador del estado en el que se encuentra la transacción</td>
+  <td>Numérico</td>
+  <td>Ejemplo: -1</td>
+  </tr>
+  <tr>
+  <td><b>RESULTMESSAGE</b></td>
+  <td>Sí</td>
+  <td>Describe el estado en el que se encuentra la transacción</td>
+  <td>Alfanumérico</td>
+  <td>Ejemplo: "APROBADA"</td>
+  </tr>
+  <tr>
+    <td><b>DATETIME</b></td>
+    <td>No</td>
+    <td></td>
+    <td></td>
+    <td>2015-05-13T14:11:38.287+00:00</td>
+  </tr>
+  <tr>
+    <td><b>OPERATIONID</b></td>
+    <td>Sí</td>
+    <td>Identificación de la transacción para el Comercio. Debe ser distinto para cada operación.</td>
+    <td>Alfanumérico de 1 a 40 caracteres.</td>
+    <td>141120084707</td>
+  </tr>
+  <tr>
+    <td><b>CURRENCYCODE</b></td>
+    <td>Sí</td>
+    <td>Código de moneda utilizado en la transacción. Por el momento solo 32 (Pesos)</td>
+    <td>Numérico</td>
+    <td>32</td>
+  </tr>
+  <tr>
+    <td><b>AMOUNT</b></td>
+    <td>Sí</td>
+    <td>Importe original en Pesos de la transacción.</td>
+    <td>Numérico con 9 dígitos con hasta 2 decimales 999999[.CC]
+Usando el punto como separador de decimales. No se permiten comas, ni como separador de miles ni como separador de decimales.</td>
+    <td>$125,38 -> 125.38 <br />$12 -> 12.00</td>
+  </tr>
+  <tr>
+    <td><b>AMOUNTBUYER</b></td>
+    <td>Sí</td>
+    <td>Importe final en Pesos de la transacción.</td>
+    <td>Numérico con 9 dígitos con hasta 2 decimales 999999[.CC]
+Usando el punto como separador de decimales. No se permiten comas, ni como separador de miles ni como separador de decimales.</td>
+    <td>$125,38 -> 125.38 <br />$12 -> 12.00</td>
+  </tr>
+  <tr>
+    <td><b>TYPE</b></td>
+    <td>Sí</td>
+    <td>Tipo de Operación, en el caso del GetStatus siempre será *compra_online*</td>
+    <td>Alfanumérico</td>
+    <td>compra_online</td>
+  </tr>
+  <tr>
+    <td><b>INSTALLMENTPAYMENTS</b></td>
+    <td>No</td>
+    <td>Código de autorización generado por el medio de pago</td>
+    <td>Decimal de hasta dos dígitos.</td>
+    <td>01, 02, 06, 12, etc.</td>
+  </tr>
+  <tr>
+  <td><b>CUSTOMEREMAIL</b></td>
+  <td>Sí</td>
+  <td>Mail del usuario al que se le emite la factura</td>
+  <td>Alfanumérico de 100 caracteres.</td>
+  <td>Ejemplo: cosme@fulanito.com</td>
+  </tr>
+  <tr>
+  <td><b>IDENTIFICATIONTYPE</b></td>
+  <td>No</td>
+  <td>Tipo de documento</td>
+  <td></td>
+  <td>DNI<br />CI<br />LE<br />LC</td>
+  </tr>
+  <tr>
+    <td><b>IDENTIFICATION</b></td>
+    <td>No</td>
+    <td>Número de documento</td>
+    <td>Numérico</td>
+    <td>Ejemplo: 1987234</td>
+  </tr>
+  <tr>
+    <td><b>CARDNUMBER</b></td>
+    <td>No</td>
+    <td>Número de Tarjeta, enmascarado según normativas nacionales</td>
+    <td>alfanumérico de 20 caracteres</td>
+    <td>Ejemplo: "450799XXXXXX0010"</td>
+  </tr>
+  <tr>
+  <td><b>TITULAR</b></td>
+  <td>No</td>
+  <td>Nombre del titular de la tarjeta.</td>
+  <td>Alfanumérico</td>
+  <td>Ejemplo: "Juan Pérez"</td>
+  </tr>
+  <tr>
+    <td><b>NROTICKET</b></td>
+    <td>No</td>
+    <td>Número de Ticket o Voucher</td>
+    <td>Numérico de Hasta 4 dígitos</td>
+    <td>Ejemplo: 7509</td>
+  </tr>
+  <tr>
+    <td><b>CFT</b></td>
+    <td>Si</td>
+    <td>CFT de la promoción aplicada</td>
+    <td>Decimal</td>
+    <td>Ejemplo: 0.00</td>
+  </tr>
+  <tr>
+    <td><b>TEA</b></td>
+    <td>Si</td>
+    <td>TEA de la promoción aplicada</td>
+    <td>Decimal</td>
+    <td>Ejemplo: 22.00</td>
+  </tr>
+</table>
 
 <ins><strong>Ejemplo de Respuesta</strong></ins>
 
@@ -430,13 +748,15 @@ Map<String, Object>
 				BARCODE = null,
 				COUPONEXPDATE = null,
 				COUPONSECEXPDATE = null,
-     			COUPONSUBSCRIBER = null,
+     			        COUPONSUBSCRIBER = null,
 				BANKID = 11,
 				PAYMENTMETHODTYPE = Crédito,
 				PAYMENTMETHODCODE = 42,
 				PROMOTIONID = 2706,
-                AMOUNTBUYER = 10.00,
-                PAYMENTMETHODNAME = VISA,
+                                AMOUNTBUYER = 10.00,
+                                PAYMENTMETHODNAME = VISA,
+				TEA = 22.00,
+				CFT = 0.00,
 				PUSHNOTIFYENDPOINT = null,
 				PUSHNOTIFYMETHOD = null,
 				PUSHNOTIFYSTATES = null,
@@ -509,6 +829,13 @@ La SDK dispone de métodos para realizar la devolución, de una transacción rea
 
 Se debe llamar al método ```voidRequest``` de la siguiente manera:
 
+Campo            | Requerido  | Descripción                                                              | Tipo de Dato | Valores posibles / Ejemplo
+-----------------|------------|---------------------------------------------------------------------     |--------------|---------------------------
+Security         | Sí         | API Key del comercio asignada por TodoPago                               | alfanumérico | 837BE68A892F06C17B944F344AEE8F5F
+Merchant         | Sí         | Nro de comercio asignado por TodoPago                                    | numérico     | 12345
+RequestKey       | No*        | RequestKey devuelto como respuesta del servicio SendAutorizeRequest      | alfanumérico | 6d2589f2-37e6-1334-7565-3dc19404480c
+AuthorizationKey | No*        | AuthorizationKey devuelto como respuesta del servicio GetAuthorizeAnswer | alfanumérico | 4a2569a2-38e6-4589-1564-4480c3dc1940
+
 ```java
 private static Map<String, String> getVRParameters() {
 		Map<String, String> parameters = new HashMap<String, String>();
@@ -536,6 +863,12 @@ Map<String, Object> h = tpc.voidRequest(getVRParameters());
 ```
 
 **Respuesta del servicio:**
+
+Campo         | Requerido   | Descripción                                      |Tipo de Dato  | Valores posibles / Ejemplo
+--------------|-------------|--------------------------------------------------|--------------|----------------------------------
+StatusCode    | Sí          |Número de identificación del motivo del resultado | Numérico     | 2011
+StatusMessage | Sí          |Resultado de la devolución                        | Alfanumérico | Operación realizada correctamente
+
 Si la operación fue realizada correctamente se informará con un código 2011 y un mensaje indicando el éxito de la operación.
 
 ```java
@@ -543,6 +876,7 @@ Map<String, Object>
 	{ StatusCode = 2011,
 	  StatusMessage = Operación realizada correctamente }
 ```
+<br>
 
 <a name="devolucionparcial"></a>
 #### Devolución parcial
@@ -555,6 +889,14 @@ La SDK dispone de métodos para realizar la devolución parcial, de una transacc
 _Nota: Para el caso de promociones con costo financiero, se deberá enviar el monto a devolver en base al valor original de la transacción y no del monto finalmente cobrado. TodoPago se encargará de devolver el porcentaje del costo financiero correspondiente a la devolución parcial._
 
 Se debe llamar al método ```returnRequest``` de la siguiente manera:
+
+Campo            | Requerido | Descripción                                                              | Tipo de Dato                                                                  | Valores posibles / Ejemplo
+-----------      |------------|--------------------------------------------------------------------------|-------------------------------------------------------------------------------|---------------------------
+Security         | Sí         | API Key del comercio asignada por TodoPago                               | alfanumérico                                                                  | 837BE68A892F06C17B944F344AEE8F5F
+Merchant         | Sí         | Nro de comercio asignado por TodoPago                                    | numérico                                                                      | 12345
+RequestKey       | No*        | RequestKey devuelto como respuesta del servicio SendAutorizeRequest      | alfanumérico                                                                  | 6d2589f2-37e6-1334-7565-3dc19404480c
+AuthorizationKey | No*        | AuthorizationKey devuelto como respuesta del servicio GetAuthorizeAnswer | alfanumérico                                                                  | 4a2569a2-38e6-4589-1564-4480c3dc1940
+AMOUNT           | No         | Monto a devolver, si no se envía, se trata de una devolución total       | string usando . como separador decimal, incluyendo SIEMPRE 2 cifras decimales | 23.50
 
 ```java
 private static Map<String, String> getRRParameters() {
@@ -583,6 +925,12 @@ Map<String, Object> i = tpc.returnRequest(getRRParameters());
 ```
 
 **Respuesta de servicio:**
+
+Campo         | Requerido   | Descripción                                      |Tipo de Dato  | Valores posibles / Ejemplo
+--------------|-------------|--------------------------------------------------|--------------|----------------------------------
+StatusCode    | Sí          |Número de identificación del motivo del resultado | Numérico     | 2011
+StatusMessage | Sí          |Resultado de la devolución                        | Alfanumérico | Operación realizada correctamente
+
 Si la operación fue realizada correctamente se informará con un código 2011 y un mensaje indicando el éxito de la operación.
 
 ```java
@@ -590,22 +938,24 @@ Map<String, Object>
 	{ StatusCode = 2011,
 	  StatusMessage = Operación realizada correctamente }
 ```
+<br>
 
 <a name="formhidrido"></a>
 #### Formulario híbrido
 
-**Conceptos básicos**
-El formulario híbrido, es una alternativa al medio de pago actual por redirección al formulario externo de TodoPago.<br> 
+**Conceptos básicos**<br>
+El formulario híbrido, es una alternativa al medio de pago actual por redirección al formulario externo de TodoPago.<br>
 Con el mismo, se busca que el comercio pueda adecuar el look and feel del formulario a su propio diseño.
 
-**Libreria**
-El formulario requiere incluir en la pagina una libreria Javascript de TodoPago.<br>
+**Librería**
+El formulario requiere incluir en la página una librería Javascript de TodoPago.<br>
 El endpoint depende del entorno:
-+ Desarrollo: https://developers.todopago.com.ar/resources/TPHybridForm-v0.1.js
-+ Produccion: https://forms.todopago.com.ar/resources/TPHybridForm-v0.1.js
++ Desarrollo: https://developers.todopago.com.ar/resources/v2/TPBSAForm.min.js
++ Producción: https://forms.todopago.com.ar/resources/v2/TPBSAForm.min.js
 
 **Restricciones y libertades en la implementación**
 
++ Por ningún motivo podrá bajarse el javascript provisto ni realizar cambios en el mismo. Siempre deberá ser tomado de los servidores de TodoPago.
 + Ninguno de los campos del formulario podrá contar con el atributo name.
 + Se deberá proveer de manera obligatoria un botón para gestionar el pago con Billetera Todo Pago.
 + Todos los elementos de tipo <option> son completados por la API de Todo Pago.
@@ -622,45 +972,54 @@ El formulario implementado debe contar al menos con los siguientes campos.
 
 ```html
 <body>
-	<select id="formaDePagoCbx"></select>
-	<select id="bancoCbx"></select>
-	<select id="promosCbx"></select>
-	<label id="labelPromotionTextId"></label>
-	<input id="numeroTarjetaTxt"/>
-	<input id="mesTxt"/>
-	<input id="anioTxt"/>
-	<input id="codigoSeguridadTxt"/>
-	<label id="labelCodSegTextId"></label>
-	<input id="apynTxt"/>
-	<select id="tipoDocCbx"></select>
-	<input id="nroDocTxt"/>
-	<input id="emailTxt"/><br/>
-	<button id="MY_btnPagarConBilletera"/>
-	<button id="MY_btnConfirmarPago"/>
+  <select id="formaPagoCbx"></select>
+  <input id="numeroTarjetaTxt"/>
+  <label id="numeroTarjetaLbl"></label>
+  <select id="medioPagoCbx"></select>
+  <select id="bancoCbx"></select>
+  <select id="promosCbx"></select>
+  <label id="promosLbl"></label>
+  <label id="peiLbl"></label>
+  <input id="peiCbx"/>
+  <select id="mesCbx"></select>
+  <select id="anioCbx"></select>
+  <label id="fechaLbl"></label>
+  <input id="codigoSeguridadTxt"/>
+  <label id="codigoSeguridadLbl"></label>
+  <input id="nombreTxt"/>
+  <select id="tipoDocCbx"></select>
+  <input id="nroDocTxt"/>
+  <input id="emailTxt"/>
+  <label id="tokenPeiLbl"></label>
+  <input id="tokenPeiTxt"/>
+  <button id="MY_btnConfirmarPago"/>
+  <button id="MY_btnPagarConBilletera"/>
 </body>
 ```
 
 **Inizialización y parámetros requeridos**<br>
 Para inicializar el formulario se usa window.TPFORMAPI.hybridForm.initForm. El cual permite setear los elementos y ids requeridos.
 
-Para inicializar un ítem de pago, es necesario llamar a window.TPFORMAPI.hybridForm.setItem. Este requiere obligatoriamente el parametro publicKey que corresponde al PublicRequestKey (entregado por el SAR).
-Se sugiere agregar los parametros usuario, e-mail, tipo de documento y numero.
+Para inicializar un ítem de pago, es necesario llamar a window.TPFORMAPI.hybridForm.setItem. Este requiere obligatoriamente el parámetro publicKey que corresponde al PublicRequestKey (entregado por el SAR).
+Se sugiere agregar los parámetros usuario, e-mail, tipo de documento y numero.
 
 **Javascript**
 ```js
+/************* CONFIGURACION DEL API ***********************/
 window.TPFORMAPI.hybridForm.initForm({
-    callbackValidationErrorFunction: 'validationCollector',
-    callbackBilleteraFunction: 'billeteraPaymentResponse',
-    callbackCustomSuccessFunction: 'customPaymentSuccessResponse',
-    callbackCustomErrorFunction: 'customPaymentErrorResponse',
-    botonPagarId: 'MY_btnConfirmarPago',
-    botonPagarConBilleteraId: 'MY_btnPagarConBilletera',
-    modalCssClass: 'modal-class',
-    modalContentCssClass: 'modal-content',
-    beforeRequest: 'initLoading',
-    afterRequest: 'stopLoading'
+callbackValidationErrorFunction: 'validationCollector',
+callbackBilleteraFunction: 'billeteraPaymentResponse',
+callbackCustomSuccessFunction: 'customPaymentSuccessResponse',
+callbackCustomErrorFunction: 'customPaymentErrorResponse',
+botonPagarId: 'MY_btnConfirmarPago',
+botonPagarConBilleteraId: 'MY_btnPagarConBilletera',
+modalCssClass: 'modal-class',
+modalContentCssClass: 'modal-content',
+beforeRequest: 'initLoading',
+afterRequest: 'stopLoading'
 });
 
+/************* SETEO UN ITEM PARA COMPRAR ******************/
 window.TPFORMAPI.hybridForm.setItem({
     publicKey: 'taf08222e-7b32-63d4-d0a6-5cabedrb5782', //obligatorio
     defaultNombreApellido: 'Usuario',
@@ -669,29 +1028,38 @@ window.TPFORMAPI.hybridForm.setItem({
     defaultTipoDoc: 'DNI'
 });
 
-//callbacks de respuesta del pago
+/************* FUNCIONES CALLBACKS *************************/
 function validationCollector(parametros) {
+console.log("My validation collector callback");
+console.log(parametros.field + " -> " + parametros.error);
 }
 function billeteraPaymentResponse(response) {
+console.log("My billetera payment callback");
+console.log(response.ResultCode + " -> " +response.ResultMessage);
 }
 function customPaymentSuccessResponse(response) {
+console.log("My custom payment success callback");
+console.log(response.ResultCode + " -> " +response.ResultMessage);
 }
 function customPaymentErrorResponse(response) {
+console.log("My custom payment error callback");
+console.log(response.ResultCode + " -> " +response.ResultMessage);
 }
 function initLoading() {
+console.log('Loading...');
 }
 function stopLoading() {
+console.log('Stop loading...');
 }
+
 ```
 
-**Callbacks**
-El formulario define callbacks javascript, que son llamados según el estado y la informacion del pago realizado:
+**Callbacks**<br>
+El formulario define callbacks javascript, que son llamados según el estado y la información del pago realizado:
 + billeteraPaymentResponse: Devuelve response si el pago con billetera se realizó correctamente.
 + customPaymentSuccessResponse: Devuelve response si el pago se realizo correctamente.
-+ customPaymentErrorResponse: Si hubo algun error durante el proceso de pago, este devuelve el response con el codigo y mensaje correspondiente.
-
-**Ejemplo de Implementación**:
-<a href="/Ejemplo/FormularioHibrido/formularioHibridoEjemplo.html" target="_blank">Formulario hibrido</a>
++ customPaymentErrorResponse: Si hubo algún error durante el proceso de pago, este devuelve el response con el código y mensaje correspondiente.
+[<sub>Volver a inicio</sub>](#inicio)
 
 [<sub>Volver a inicio</sub>](#inicio)
 
@@ -745,37 +1113,107 @@ Se debe llamar al método ```healthCheck``` de la siguiente manera:
 	Boolean check = tpc.healthCheck();	
 ```
 
-[<sub>Volver a inicio</sub>](#inicio)
+<a name="opcionesadicionales"></a>
+#### Opciones adicionales
+Dentro del primer parámetro pasado al método sendAuthorizeRequest() pueden enviarse opciones adicionales que habilitan características para esa transacción en particular. A continuación se describen las mismas.
 
-<a name="maxcuotas"></a>
-#### Máximo de cuotas a mostrar en formulario
-Mediante esta funcionalidad, se permite setear el número máximo de cuotas que se desplegará en el formulario de pago.
- 
-Para hacer uso de esta funcionalidad debe agregarse en el **Map<String, String> parameters** del método **sendAuthorizeRequest** el campo **MAXINSTALLMENTS** con el valor máximo de cuotas a ofrecer (generalmente de 1 a 12)
- 
+<a name="coutas"></a>
+##### Rango de Cuotas
+Es posible setear el rango de cuotas a mostrar en el formulario entre un mínimo y un máximo, enviando los siguientes parametros adicionales
+
+<table>
+  <tr>
+    <th>Campo</th>
+    <th>Requerido</th>
+    <th>Descripción</th>
+    <th>Tipo de Dato</th>
+    <th>Valores posibles / Ejemplo</th>
+  </tr>
+  <tr>
+    <td><b>MININSTALLMENTS</b></td>
+    <td>No</td>
+    <td>Mínimo de cuotas a mostrar en el formulario</td>
+    <td>Numérico</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td><b>MAXINSTALLMENTS</b></td>
+    <td>No</td>
+    <td>Máximo de cuotas a mostrar en el formulario</td>
+    <td>Numérico</td>
+    <td>9</td>
+  </tr>  
+</table>
+
 ##### Ejemplo
  
 ```java		
 Map<String, String> parameters = new HashMap<String, String>();
-parameters.put(ElementNames.MAXINSTALLMENTS, "12");	
-```
- 
- [<sub>Volver a inicio</sub>](#inicio)
- 
- <a name="mincuotas"></a>
-#### Mínimo de cuotas a mostrar en formulario
-Mediante esta funcionalidad, se permite setear el número minimo de cuotas que se desplegará en el formulario de pago.
- 
-Para hacer uso de esta funcionalidad debe agregarse en el **Map<String, String> parameters** del método **sendAuthorizeRequest** el campo **MININSTALLMENTS** con el valor minimo de cuotas a ofrecer (generalmente de 1 a 12)
- 
-##### Ejemplo
- 
-```java		
-Map<String, String> parameters = new HashMap<String, String>();
+parameters.put(ElementNames.MAXINSTALLMENTS, "12");
 parameters.put(ElementNames.MININSTALLMENTS, "1");	
 ```
  
  [<sub>Volver a inicio</sub>](#inicio)
+ <br>
+ 
+ <a name="split"></a>
+#### Split de Pago
+Para aquellos comercios que operen con terceros y requieran dividir una transacción entre varios establecimientos Todopago permite dividir el pago.
+
+Esta funcionalidad permite que distintas subtransacciones con su propio merchants y montos operen sobre una transacción padre. Esto funciona enviado en el SAR dos campos, el "DISTRIBUTEDMERCHANT" y "DISTRIBUTEDAMOUNT". 
+El primero envía la lista de los merchant hijos de la transacción separados por **#** y el campo "DISTRIBUTEDAMOUNT" enviá los montos de cada uno de los merchants en el mismo orden respecto a los merchant del campo "DISTRIBUTEDMERCHANT" y separados por **#**.
+
+<table>
+  <tr>
+    <th>Campo</th>
+    <th>Requerido</th>
+    <th>Descripción</th>
+    <th>Tipo de Dato</th>
+    <th>Valores posibles / Ejemplo</th>
+  </tr>
+  <tr>
+    <td><b>DISTRIBUTEDMERCHANT</b></td>
+    <td>No</td>
+    <td>Listado de Merchants de los establecimientos separados por #</td>
+    <td>Numérico</td>
+    <td>3#20</td>
+  </tr>
+  <tr>
+    <td><b>DISTRIBUTEDAMOUNT</b></td>
+    <td>No</td>
+    <td>Listado de montos del split de pago separados por #</td>
+    <td>Numérico con decimales</td>
+    <td>10.00#15.00</td>
+  </tr>  
+</table>
+
+##### Ejemplo
+ 
+```java		
+Map<String, String> parameters = new HashMap<String, String>();
+parameters.put(ElementNames.DISTRIBUTEDMERCHANT, "3#20");
+parameters.put(ElementNames.DISTRIBUTEDAMOUNT, "10.00#15.00");	
+```
+ 
+ Nota: Actualmente no esta disponible la opcion realizar una devolución parcial de un Split de pago.
+ 
+ [<sub>Volver a inicio</sub>](#inicio)
+
+<a name="filtromp"></a>
+## Filtrado de Medios de Pago
+Mediante esta funcionalidad es posible filtrar los medios de pago habilitados en el formulario de pago. Se debe pasar en la llamada al servicio SendAuthorizeRequest un parámetro adicional con los ids de los medio de pago que se desean habilitar, los cuales pueden consultarse mediante el método de [Descubrimiento de Medios de Pago](#discover)
+
+Para hacer uso de esta funcionalidad debe agregarse en el **Map<String, String> parameters** del método **sendAuthorizeRequest** el campo **AVAILABLEPAYMENTMETHODSIDS** con el valor de los ids de los medios de pago habilitados, separados por #
+
+##### Ejemplo
+
+```java		
+Map<String, String> parameters = new HashMap<String, String>();
+parameters.put("AVAILABLEPAYMENTMETHODSIDS", "1#42#500");	
+```
+
+[<sub>Volver a inicio</sub>](#inicio)
+<br>
 
 <a name="timeout"></a>
 ## Tiempo de vida del formulario.
@@ -794,21 +1232,6 @@ parameters.put(ElementNames.TIMEOUT, "350000");
  
  [<sub>Volver a inicio</sub>](#inicio)
  <br>
-
-<a name="filtromp"></a>
-## Filtrado de Medios de Pago
-Mediante esta funcionalidad es posible filtrar los medios de pago habilitados en el formulario de pago. Se debe pasar en la llamada al servicio SendAuthorizeRequest un parámetro adicional con los ids de los medio de pago que se desean habilitar, los cuales pueden consultarse mediante el método de [Descubrimiento de Medios de Pago](#discover)
-
-Para hacer uso de esta funcionalidad debe agregarse en el **Map<String, String> parameters** del método **sendAuthorizeRequest** el campo **AVAILABLEPAYMENTMETHODSIDS** con el valor de los ids de los medios de pago habilitados, separados por #
-
-##### Ejemplo
-
-```java		
-Map<String, String> parameters = new HashMap<String, String>();
-parameters.put("AVAILABLEPAYMENTMETHODSIDS", "1#42#500");	
-```
-
-[<sub>Volver a inicio</sub>](#inicio)
 
 <a name="tablareferencia"></a>    
 ## Tablas de Referencia   
@@ -881,6 +1304,7 @@ parameters.put("AVAILABLEPAYMENTMETHODSIDS", "1#42#500");
 <tr><td>99961</td><td>Esta compra requiere autorización de AMEX. Comunicate al número que se encuentra al dorso de tu tarjeta.</td></tr>
 <tr><td>99970</td><td>Lo sentimos, no pudimos procesar la operación. Por favor reintentá más tarde.</td></tr>
 <tr><td>99971</td><td>Lo sentimos, no pudimos procesar la operación. Por favor reintentá más tarde.</td></tr>
+<tr><td>99977</td><td>Lo sentimos, no pudimos procesar la operación. Por favor reintentá más tarde.</td></tr>
 <tr><td>99978</td><td>Lo sentimos, no pudimos procesar la operación. Por favor reintentá más tarde.</td></tr>
 <tr><td>99979</td><td>Lo sentimos, el pago no pudo ser procesado.</td></tr>
 <tr><td>99980</td><td>Ya realizaste un pago en este sitio por el mismo importe. Si querés realizarlo nuevamente esperá 5 minutos.</td></tr>
@@ -1014,4 +1438,5 @@ parameters.put("AVAILABLEPAYMENTMETHODSIDS", "1#42#500");
 	- mvn eclipse:clean eclipse:eclipse -Dwtpversion=2.0
 - Ir a Eclipse e importar el Proyecto normalmente: File - Import - Existing Projects into Workspace
 
+<br />		
 [<sub>Volver a inicio</sub>](#inicio)

@@ -8,7 +8,7 @@ import java.util.Map;
 public class GetStatusMockParameters{
 	public static Map<String, String> getStatusParameters(){
                 Map<String, String> parameters = new HashMap<String, String>();
-                parameters.put(ElementNames.Merchant, "2658");
+                parameters.put(ElementNames.Merchant,TodoPagoParametersMock.MERCHANT);
                 parameters.put(ElementNames.OperationID, "8001");
 		return parameters;
 	}

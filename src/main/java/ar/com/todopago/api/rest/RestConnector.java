@@ -17,7 +17,7 @@ import ar.com.todopago.api.exceptions.ConnectionException;
 	
 public class RestConnector {
 
-	private final static Logger logger = Logger.getLogger(RestConnector.class.getName());
+	protected final static Logger logger = Logger.getLogger(RestConnector.class.getName());
 
 	protected final String USER_AGENT = "Mozilla/5.0";
 	protected String endpoint; 
@@ -88,10 +88,23 @@ public class RestConnector {
 		return is;
 	}
     
-    
 	public InputStream sendGet(String url,Boolean withApiKey) throws IOException, ConnectionException {
 
 		HttpURLConnection con = generateHttpURLConnection(url, null, METHOD_GET, withApiKey);
+	    
+
+
+		InputStream is = send(con);
+		logger.log(Level.INFO, "\nSending 'GET' request to URL : " + url);
+
+		return is;
+	}
+    
+	public InputStream sendGet(String url,Boolean withApiKey,Map<String,String> headers) throws IOException, ConnectionException {
+
+		HttpURLConnection con = generateHttpURLConnection(url, null, METHOD_GET, withApiKey);
+	    con.setRequestProperty("Accept", headers.get("Accept"));
+
 
 		InputStream is = send(con);
 		logger.log(Level.INFO, "\nSending 'GET' request to URL : " + url);
