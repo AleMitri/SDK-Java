@@ -35,7 +35,7 @@ public class TodoPagoConector {
 
 	private final String soapAppend = "services/";
 	private final String restAppend = "api/";
-	private final String tenant = "t/1.1/";
+	private final String tenant = "t/1.2/";
 	private final String authorizeSOAPAppend = "Authorize";
 	private final String authorizeWSDL = "/todopago/Authorize.wsdl";
 	

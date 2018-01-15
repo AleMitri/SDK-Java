@@ -41,7 +41,7 @@ public class FraudControlValidateTest {
 
 		Map<String, String> parameters = new HashMap<String, String>();
 		parameters.put("CSBTCITY", "Villa General Belgrano"); // MANDATORIO.
-		parameters.put("CSBTCOUNTRY", "AR");// MANDATORIO. Código ISO.
+		parameters.put("CSBTCOUNTRY", "AR");// MANDATORIO. Codigo ISO.
 		parameters.put("CSBTEMAIL", "some@someurl.com"); // MANDATORIO.
 		parameters.put("CSBTFIRSTNAME", "Juan");// MANDATORIO.
 		parameters.put("CSBTLASTNAME", "Perez");// MANDATORIO.
@@ -64,7 +64,7 @@ public class FraudControlValidateTest {
 		parameters.put("CSMDD11", "");// NO MANDATORIO.
 
 		parameters.put("CSSTCITY", "Villa General Belgrano"); // MANDATORIO.
-		parameters.put("CSSTCOUNTRY", "AR");// MANDATORIO. Código ISO.
+		parameters.put("CSSTCOUNTRY", "AR");// MANDATORIO. Codigo ISO.
 		parameters.put("CSSTEMAIL", "some@someurl.com"); // MANDATORIO.
 		parameters.put("CSSTFIRSTNAME", "Juan");// MANDATORIO.
 		parameters.put("CSSTLASTNAME", "Perez");// MANDATORIO.
@@ -96,7 +96,7 @@ public class FraudControlValidateTest {
 		Map<String, String> parameters = new HashMap<String, String>();
 		parameters.put("CSBTCITY", "Villa General BelgranoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA!$%&/()?"); // MANDATORIO.
 		parameters.put("CSBTCOUNTRY", "ARAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA!$%&/()?");// MANDATORIO.
-																														// Código
+																														// Codigo
 																														// ISO.
 		parameters.put("CSBTEMAIL", "some@someurl.com"); // MANDATORIO.
 		parameters.put("CSBTFIRSTNAME", "JuanAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA!$%&/()?");// MANDATORIO.
@@ -123,7 +123,7 @@ public class FraudControlValidateTest {
 		parameters.put("CSSTCITY",
 				"Villa General BelgranoPerezAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA!$%&/()?"); // MANDATORIO.
 		parameters.put("CSSTCOUNTRY", "ARPerezAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA!$%&/()?");// MANDATORIO.
-																														// Código
+																														// Codigo
 																														// ISO.
 		parameters.put("CSSTEMAIL", "some@someurl.com"); // MANDATORIO.
 		parameters.put("CSSTFIRSTNAME",

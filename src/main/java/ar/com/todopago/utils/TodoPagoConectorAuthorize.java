@@ -16,6 +16,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import ar.com.todopago.api.ElementNames;
+import ar.com.todopago.api.TodoPagoConector;
 import ar.com.todopago.api.authorize.Authorize;
 import ar.com.todopago.api.authorize.AuthorizePortType;
 import ar.com.todopago.api.authorize.GetAuthorizeAnswer;
@@ -226,9 +227,9 @@ public class TodoPagoConectorAuthorize {
 	private String createPayload(Map<String, String> parameters, Map<String, String> fraudControl) {
 		StringBuilder payload = new StringBuilder("<Request>");
 		
-//		parameters.put("SDK", "JAVA");
-//		parameters.put("SDKVERSION", TodoPagoConector.versionTodoPago);
-//		parameters.put("LENGUAGEVERSION" , System.getProperty("java.version"));
+		parameters.put("SDK", "JAVA");
+		parameters.put("SDKVERSION", TodoPagoConector.versionTodoPago);
+		parameters.put("LENGUAGEVERSION" , System.getProperty("java.version"));
 				
 		for (Map.Entry<String, String> entry : parameters.entrySet()) {
 			payload.append("<");

@@ -19,7 +19,7 @@ Todo Pago - módulo SDK-JAVA para conexión con gateway de pago
     + [Filtrado de Medios de pago](#filtromp)
     + [Tiempo de vida de la transacción](#timeout)
  + [Características](#caracteristicas)
-    + [Status de la operación](#status)
+    + [Estado de la operación](#status)
     + [Consulta de operaciones por rango de tiempo](#statusdate)
     + [Descubrimiento de Medios de Pago](#discover)
     + [Devolucion](#devolucion)
@@ -218,7 +218,7 @@ Usando el punto como separador de decimales. No se permiten comas, ni como separ
 Map<String, String> parameters = new HashMap<String, String>();
 	parameters.put(ElementNames.Session, "ABCDEF-1234-12221-FDE1-00000200");
 	parameters.put(ElementNames.Security, "1234567890ABCDEF1234567890ABCDEF");
-	parameters.put(ElementNames.EncodingMethod, "XML");
+	parameters.put(ElementNames.EncodingAlfanumérico de 1 a 8 caracteres.Method, "XML");
 	parameters.put(ElementNames.Merchant, "12345678"); //dato fijo (número identificador del comercio)
 	parameters.put(ElementNames.OperationID, "8000"); //número único que identifica la operación, generado por el comercio.
 	parameters.put(ElementNames.CurrencyCode, "032"); //por el momento es el único tipo de moneda aceptada
@@ -253,13 +253,17 @@ Map<String, Object>
 	  RequestKey = ff0f6434-a2ab-e87f-3ece-37f7081e671a }
 ```
 
-La **URL_Request** es donde está hosteado el formulario de pago y donde hay que redireccionar al usuario, una vez realizado el pago según el éxito o fracaso del mismo, el formulario redireccionará a una de las 2 URLs seteadas en **parameters** ([URL_OK](#url_ok), en caso de éxito o [URL_ERROR](#url_error), en caso de que por algún motivo el formulario rechace el pago)
+La **URL_Request** es donde está hosteado el formulario de pago y donde hay que redireccionar al usuario, una vez realizado el pago según el éxito o fracaso del mismo, el formulario redireccionará a una de las 2 URLs seteadas en **parameters** ([URL_OK](#url_ok), en caso de éxito o [URL_ERROR](Alfanumérico de 1 a 8 caracteres.#url_error), en caso de que por algún motivo el formulario rechace el pago)
 
 Si, por ejemplo, se pasa mal el <strong>MerchantID</strong> se obtendrá la siguiente respuesta:
+
 ```java
 Map<String, Object> 
 	{ StatusCode = 702,
-	  StatusMessage = ERROR: Cuenta Inexistente }
+	  StatusMessage = ERROR: Cuenta Inexistente,
+	  PublicRequestKey = null, 
+	  URL_Request = null, 
+	  RequestKey = null }
 ```
 
 <a name="confirmatransaccion"></a>
@@ -382,7 +386,9 @@ Si se pasa mal el <strong>AnswerKey</strong> o el <strong>RequestKey</strong> se
 ```java
 Map<String, Object> 
 	{ StatusCode = 404,
-	  StatusMessage = ERROR: Transaccion Inexistente }
+	  StatusMessage = ERROR: Transaccion Inexistente,
+          AuthorizationKey = null,
+          EncodingMethod = null }
 ```
 
 <a name="ejemplo"></a>      
@@ -425,7 +431,8 @@ private static Map<String, String> getFraudControlParameters() {
 	parameters.put("CSBTCUSTOMERID", "453458"); //Identificador del usuario al que se le emite la factura. MANDATORIO. No puede contener un correo electrónico.		
 	parameters.put(CSBTIPADDRESS", "192.0.0.4"); //IP de la PC del comprador. MANDATORIO.		
 	parameters.put(CSBTEMAIL", "some@someurl.com"); //Mail del usuario al que se le emite la factura. MANDATORIO.
-	parameters.put(CSBTFIRSTNAME", "Juan");//Nombre del usuario al que se le emite la factura. MANDATORIO.		
+	parameters.put(CSBTFIRSTNAME", "Juan");//Nombre del usuPor favor que esté miércoles nos encuentre a todos tirando para el mismo lado, pero que el jueves nos encuentre a todos unidos...
+ario al que se le emite la factura. MANDATORIO.		
 	parameters.put(CSBTLASTNAME", "Perez");//Apellido del usuario al que se le emite la factura. MANDATORIO.
 	parameters.put(CSBTPHONENUMBER", "541160913988");//Teléfono del usuario al que se le emite la factura. No utilizar guiones, puntos o espacios. Incluir código de país. MANDATORIO.		
 	parameters.put(CSBTPOSTALCODE", "1010");//Código Postal de la dirección de facturación. MANDATORIO.	
@@ -541,18 +548,17 @@ private static Map<String, String> getFraudControlParameters() {
 <tr><td>CSMDD89</td><td>Requerido (para Billetera)</td><td>Integer (2)</td><td></td><td>Nivel de Riesgo asignado al Medio de Pago que Utiliza</td></tr>
 </table>
 
-
 [<sub>Volver a inicio</sub>](#inicio)
 <br>
 
 <a name="caracteristicas"></a>
 ## Características
 
+<a name="status"></a>
+#### Estado de la operación
+
 ![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/README.img/secuencia-status.jpg)
 
-
-<a name="status"></a>
-#### Status de la Operación
 La SDK cuenta con un método para consultar el status de la transacción desde la misma SDK. El método se utiliza de la siguiente manera:
 
 <table>
@@ -593,6 +599,8 @@ Map<String, Object> d = tpc.getStatus(getSParameters());// Merchant es el id sit
 ```
 El siguiente método retornará el status actual de la transacción en Todopago.
 
+
+
 <table>
   <tr>
     <th>Campo</th>
@@ -614,6 +622,13 @@ El siguiente método retornará el status actual de la transacción en Todopago.
   <td>Describe el estado en el que se encuentra la transacción</td>
   <td>Alfanumérico</td>
   <td>Ejemplo: "APROBADA"</td>
+  </tr>
+  <tr>
+    <td><b>CUSTOMERID</b></td>
+    <td>Sí</td>
+    <td>Identificación, provista por el sistema de comercio, del cliente que realizó la transacción.</td>
+    <td>Alfanumérico de 1 a 8 caracteres.</td>
+    <td>42</td>
   </tr>
   <tr>
     <td><b>DATETIME</b></td>
@@ -695,19 +710,27 @@ Usando el punto como separador de decimales. No se permiten comas, ni como separ
     <td>Ejemplo: "450799XXXXXX0010"</td>
   </tr>
   <tr>
-  <td><b>TITULAR</b></td>
+  <td><b>CARDHOLDERNAME</b></td>
   <td>No</td>
   <td>Nombre del titular de la tarjeta.</td>
   <td>Alfanumérico</td>
   <td>Ejemplo: "Juan Pérez"</td>
   </tr>
   <tr>
-    <td><b>NROTICKET</b></td>
+    <td><b>TICKETNUMBER</b></td>
     <td>No</td>
     <td>Número de Ticket o Voucher</td>
     <td>Numérico de Hasta 4 dígitos</td>
     <td>Ejemplo: 7509</td>
   </tr>
+  <tr>
+    <td><b>AUTHORIZATIONCODE</b></td>
+    <td>Si</td>
+    <td>Código de autorización</td>
+    <td>Numérico</td>
+    <td>Ejemplo: 109345</td>
+  </tr>
+	
   <tr>
     <td><b>CFT</b></td>
     <td>Si</td>
@@ -722,6 +745,90 @@ Usando el punto como separador de decimales. No se permiten comas, ni como separ
     <td>Decimal</td>
     <td>Ejemplo: 22.00</td>
   </tr>
+  <tr>
+    <td><b>FEEAMOUNT</b></td>
+    <td>Si</td>
+    <td>Comisión por la transacción</td>
+    <td>Decimal</td>
+    <td>Ejemplo: 22.00</td>
+  </tr>
+  <tr>
+    <td><b>TAXAMOUNT</b></td>
+    <td>Si</td>
+    <td>Retenciones de impuestos</td>
+    <td>Decimal</td>
+    <td>Ejemplo: 22.00</td>
+  </tr>
+  <tr>
+    <td><b>SERVICECHAGEAMOUNT</b></td>
+    <td>Si</td>
+    <td>Costo del servicio</td>
+    <td>Decimal</td>
+    <td>Ejemplo: 22.00</td>
+  </tr>
+  <tr>
+    <td><b>CREDITEDAMOUNT</b></td>
+    <td>Si</td>
+    <td>Monto neto acreditado</td>
+    <td>Decimal</td>
+    <td>Ejemplo: 22.00</td>
+  </tr>
+  <tr>
+    <td><b>FEEAMOUNT</b></td>
+    <td>Si</td>
+    <td>Comisión por la transacción</td>
+    <td>Decimal</td>
+    <td>Ejemplo: 22.00</td>
+  </tr>
+  <tr>
+    <td><b>RELEASESTATUS</b></td>
+    <td>Si</td>
+    <td>Estado de la transacción</td>
+    <td>Alfanumérico</td>
+    <td>Ejemplo: TX_APROBADA</td>
+  </tr>
+  <tr>
+    <td><b>RELEASEDATETIME</b></td>
+    <td>Si</td>
+    <td>Fecha de disponibilización de la transacción</td>
+    <td>Datetime</td>
+    <td>Ejemplo: 2017-11-28T11:24:11</td>
+  </tr>
+  <tr>
+    <td><b>PHONENUMBER</b></td>
+    <td>Si</td>
+    <td>Número de teléfono de facturación</td>
+    <td>Alfanumérico</td>
+    <td>Ejemplo: 541152528100</td>
+  </tr>
+  <tr>
+    <td><b>ADDRESS</b></td>
+    <td>Si</td>
+    <td>Dirección de facturación</td>
+    <td>Alfanumérico</td>
+    <td>Ejemplo: Callao 78</td>
+  </tr>  
+  <tr>
+    <td><b>POSTALCODE</b></td>
+    <td>Si</td>
+    <td>Código postal de facturación</td>
+    <td>Alfanumérico</td>
+    <td>Ejemplo: C1430DRW</td>
+  </tr>  
+  <tr>
+    <td><b>REFUNDS</b></td>
+    <td>Si</td>
+    <td>Listado de devoluciones realizadas sobre la transacción</td>
+    <td>Array</td>
+    <td>-</td>
+  </tr>  
+  <tr>
+    <td><b>ITEMS</b></td>
+    <td>Si</td>
+    <td>Listado de items de la compra</td>
+    <td>Array</td>
+    <td>&lt;code&gt;Camisetas&lt;/code&gt; &lt;description&gt;Fashion lleva diseando colecciones increbles desde&lt;/description&gt; &lt;name&gt;Camiseta efecto desteido de manga corta&lt;/name&gt; &lt;price&gt;19.98&lt;/price&gt; &lt;quantity&gt;1&lt;/quantity&gt; &lt;sku&gt;demo1&lt;/sku&gt; &lt;totalAmount&gt;19.98&lt;/totalAmount&gt;</td>
+  </tr>    
 </table>
 
 <ins><strong>Ejemplo de Respuesta</strong></ins>
@@ -757,9 +864,12 @@ Map<String, Object>
                                 PAYMENTMETHODNAME = VISA,
 				TEA = 22.00,
 				CFT = 0.00,
-				PUSHNOTIFYENDPOINT = null,
-				PUSHNOTIFYMETHOD = null,
-				PUSHNOTIFYSTATES = null,
+				RELEASESTATUS : TX_APROBADA,
+				RELEASEDATETIME : 2017-11-28T11:24:11,
+				PHONENUMBER: 541141231234,
+				ADDRESS: Uspallata 123,
+				POSTALCODE: A1430AAA,
+				CUSTOMERID: 10,
 				REFUNDED = null, 
 				REFUNDS = { REFUND0 = { ID = 50163419,
 										DATETIME = 2016-03-18T16:03:54.987-03:00,
@@ -772,7 +882,29 @@ Map<String, Object>
 										AMOUNT = 2.00 }
 							}
 						}
-				}	
+				},
+				ITEMS= {
+					ITEM={
+						code= Cameras,
+						description= Engineered with,
+						name= Nikon D300,
+						price= 80.00,
+						quantity= 3,
+						sku= 31,
+						totalAmount= 240.00
+					}, {
+						code= Desktops,
+						description= HTC Touch  in,
+						name= HTC Touch HD,
+						price= 100.00,
+						quantity= 3,
+						sku=28,
+						totalAmount= 300.00
+					}
+				}
+				PUSHNOTIFYENDPOINT = null,
+				PUSHNOTIFYMETHOD = null,
+				PUSHNOTIFYSTATES = null,
 	}					
 ```
 Además, se puede conocer el estado de las transacciones a través del portal [www.todopago.com.ar](http://www.todopago.com.ar/). Desde el portal se verán los estados "Aprobada" y "Rechazada". Si el método de pago elegido por el comprador fue Pago Fácil o RapiPago, se podrán ver en estado "Pendiente" hasta que el mismo sea pagado.
@@ -784,6 +916,13 @@ Además, se puede conocer el estado de las transacciones a través del portal [w
 ![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/README.img/secuencia-getoperations.jpg)
 
 En este caso hay que llamar a getByRangeDateTime() y devolvera todas las operaciones realizadas en el rango de fechas dado
+
+Campo      | Requerido  | Descripción                                 | Tipo de Dato | Valores posibles / Ejemplo
+-----------|------------|---------------------------------------------|--------------|----------------------------------
+MERCHANT   | Sí         | Nro identificador del comercio              | numérico     | 12305
+STARTDATE  | Sí         | Fecha y hora desde                          | date         | "2017-03-03T16:15:00"
+ENDDATE    | Sí         | Fecha y hora hasta                          | date         | "2017-08-07T22:34:00"
+PAGENUMBER | Sí         | Número de página a la que se desea acceder* | entero       | 2
 
 ```java
 private static Map<String, String> getBRYParameters() {

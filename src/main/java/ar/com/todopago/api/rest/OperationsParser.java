@@ -3,10 +3,14 @@ package ar.com.todopago.api.rest;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -15,24 +19,38 @@ import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import org.xml.sax.InputSource;
 import ar.com.todopago.api.exceptions.ResponseException;
 import ar.com.todopago.api.model.User;
 
 public class OperationsParser {
 
+	private final static Logger logger = Logger.getLogger(OperationsParser.class.getName());
+	
 	// from InputStream to Map
 	public static Map<String, Object> inputStreamToMap(InputStream inputStream)
 			throws ParserConfigurationException, SAXException, IOException {
-		NodeList nList = inputStreamToNodeList(inputStream);
+		
+		String line;
+		StringBuilder sb = new StringBuilder();
+		BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+		while ((line = br.readLine()) != null) {
+			sb.append(line.trim());
+		}
+	    
+		logger.log(Level.WARNING,sb.toString());
+		NodeList nList = inputStreamToNodeList(sb.toString());
 		return parseNodeListToMap(nList);
 	}
 
 	// From InputStream to NodeList
-	public static NodeList inputStreamToNodeList(InputStream inputStream)
+	public static NodeList inputStreamToNodeList(String xml)
 			throws ParserConfigurationException, SAXException, IOException {
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		dbFactory.setIgnoringElementContentWhitespace(true);
 		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-		Document doc = dBuilder.parse(inputStream);
+		InputSource is = new InputSource(new StringReader(xml));
+		Document doc = dBuilder.parse(is);
 		doc.getDocumentElement().normalize();
 		return doc.getChildNodes();
 	}
@@ -43,10 +61,15 @@ public class OperationsParser {
 		for (int i = 0; i < nList.getLength(); i++) {
 			if (nList.item(i).hasChildNodes() && nList.item(i).getChildNodes().item(0).hasChildNodes()) {
 				// call recursive, fill a new map
-				// logger.log(Level.WARNING,
+			    // logger.log(Level.WARNING,
 				// nList.item(i).getNodeName().toString() + " - "+
 				// nList.item(i).getChildNodes().toString() );
-				if (nList.item(i).getNodeName().equals("REFUND")) {
+				if (nList.item(i).getNodeName().equals("ITEM")) {
+					ret.put(nList.item(i).getNodeName() + i, parseNodeListToMap(nList.item(i).getChildNodes()));
+					// logger.log(Level.WARNING,
+					// nList.item(i).getNodeName().toString() + i + " - "+
+					// nList.item(i).getChildNodes().toString() );
+				} else if (nList.item(i).getNodeName().equals("REFUND")) {
 					ret.put(nList.item(i).getNodeName() + i, parseNodeListToMap(nList.item(i).getChildNodes()));
 					// logger.log(Level.WARNING,
 					// nList.item(i).getNodeName().toString() + i + " - "+
