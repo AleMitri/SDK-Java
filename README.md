@@ -15,7 +15,6 @@ Todo Pago - módulo SDK-JAVA para conexión con gateway de pago
     + [Datos de referencia](#datosreferencia) 
  + [Opciones adicionales](#opcionesadicionales)
     + [Rango de cuotas](#coutas)
-    + [Split de pago](#split)
     + [Filtrado de Medios de pago](#filtromp)
     + [Tiempo de vida de la transacción](#timeout)
  + [Características](#caracteristicas)
@@ -1291,52 +1290,8 @@ Map<String, String> parameters = new HashMap<String, String>();
 parameters.put(ElementNames.MAXINSTALLMENTS, "12");
 parameters.put(ElementNames.MININSTALLMENTS, "1");	
 ```
- 
- [<sub>Volver a inicio</sub>](#inicio)
- <br>
- 
- <a name="split"></a>
-#### Split de Pago
-Para aquellos comercios que operen con terceros y requieran dividir una transacción entre varios establecimientos Todopago permite dividir el pago.
 
-Esta funcionalidad permite que distintas subtransacciones con su propio merchants y montos operen sobre una transacción padre. Esto funciona enviado en el SAR dos campos, el "DISTRIBUTEDMERCHANT" y "DISTRIBUTEDAMOUNT". 
-El primero envía la lista de los merchant hijos de la transacción separados por **#** y el campo "DISTRIBUTEDAMOUNT" enviá los montos de cada uno de los merchants en el mismo orden respecto a los merchant del campo "DISTRIBUTEDMERCHANT" y separados por **#**.
-
-<table>
-  <tr>
-    <th>Campo</th>
-    <th>Requerido</th>
-    <th>Descripción</th>
-    <th>Tipo de Dato</th>
-    <th>Valores posibles / Ejemplo</th>
-  </tr>
-  <tr>
-    <td><b>DISTRIBUTEDMERCHANT</b></td>
-    <td>No</td>
-    <td>Listado de Merchants de los establecimientos separados por #</td>
-    <td>Numérico</td>
-    <td>3#20</td>
-  </tr>
-  <tr>
-    <td><b>DISTRIBUTEDAMOUNT</b></td>
-    <td>No</td>
-    <td>Listado de montos del split de pago separados por #</td>
-    <td>Numérico con decimales</td>
-    <td>10.00#15.00</td>
-  </tr>  
-</table>
-
-##### Ejemplo
- 
-```java		
-Map<String, String> parameters = new HashMap<String, String>();
-parameters.put(ElementNames.DISTRIBUTEDMERCHANT, "3#20");
-parameters.put(ElementNames.DISTRIBUTEDAMOUNT, "10.00#15.00");	
-```
- 
- Nota: Actualmente no esta disponible la opcion realizar una devolución parcial de un Split de pago.
- 
- [<sub>Volver a inicio</sub>](#inicio)
+[<sub>Volver a inicio</sub>](#inicio)
 
 <a name="filtromp"></a>
 ## Filtrado de Medios de Pago
